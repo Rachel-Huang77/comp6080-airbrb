@@ -34,7 +34,8 @@ This file provides essential guidance to Claude Code (claude.ai/code) when worki
 ### 📝 MANDATORY REQUIREMENTS
 
 - **COMMIT** after every completed task/phase - no exceptions
-- **GITHUB BACKUP** - Push to GitHub after every commit to maintain backup: `git push origin master`
+- **GITHUB BACKUP** - Push to GitHub after every commit to maintain backup: `git push github master`
+- **NEVER PUSH TO GITLAB** - Do NOT push to origin (GitLab) - only push to github remote
 - **USE TASK AGENTS** for all long-running operations (>30 seconds) - Bash commands stop when context switches
 - **TODOWRITE** for complex tasks (3+ steps) → parallel agents → git checkpoints → test validation
 - **READ FILES FIRST** before editing - Edit/Write tools will fail if you didn't read the file first
@@ -45,7 +46,7 @@ This file provides essential guidance to Claude Code (claude.ai/code) when worki
 
 - **PARALLEL TASK AGENTS** - Launch multiple Task agents simultaneously for maximum efficiency
 - **SYSTEMATIC WORKFLOW** - TodoWrite → Parallel agents → Git checkpoints → GitHub backup → Test validation
-- **GITHUB BACKUP WORKFLOW** - After every commit: `git push origin master` to maintain GitHub backup
+- **GITHUB BACKUP WORKFLOW** - After every commit: `git push github master` to maintain GitHub backup
 - **BACKGROUND PROCESSING** - ONLY Task agents can run true background operations
 
 ### 🔍 MANDATORY PRE-TASK COMPLIANCE CHECK
@@ -130,23 +131,27 @@ npm run lint
 
 ## 🐙 GITHUB AUTO-BACKUP
 
-**Repository**: Connected with auto-push enabled
+**Repository**: https://github.com/Rachel-Huang77/comp6080-airbrb
 **Branch**: master
-**Auto-backup**: Enabled via git hooks
+**GitHub Remote**: github (NOT origin - origin is for GitLab course submission)
 
-After every commit, changes are automatically pushed to GitHub for backup.
+⚠️ **IMPORTANT GIT REMOTES:**
+- `origin` → GitLab (COMP6080 course) - **DO NOT PUSH**
+- `github` → GitHub backup - **PUSH HERE**
 
 ### Manual GitHub Commands
 
 ```bash
-# Check GitHub connection
+# Check all remotes
 git remote -v
 
-# Push changes (after commit)
-git push origin master
+# Push changes to GitHub (after commit)
+git push github master
 
 # Check repository status
 git status
+
+# ❌ DO NOT RUN: git push origin master (this pushes to GitLab!)
 ```
 
 ## 🚨 TECHNICAL DEBT PREVENTION
@@ -216,7 +221,8 @@ Before starting ANY task, verify:
 - [ ] Use Task agents for >30 second operations
 - [ ] TodoWrite for 3+ step tasks
 - [ ] Commit after each completed task
-- [ ] Push to GitHub after every commit
+- [ ] Push to GitHub after every commit: `git push github master`
+- [ ] NEVER push to GitLab origin
 
 ---
 
