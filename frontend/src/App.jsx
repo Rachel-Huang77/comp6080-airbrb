@@ -6,6 +6,7 @@ import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import HostedListingsPage from './pages/HostedListingsPage';
+import CreateListingPage from './pages/CreateListingPage';
 
 // Create Material-UI theme
 const theme = createTheme({
@@ -31,6 +32,7 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/my-listings" element={<HostedListingsPage />} />
+            <Route path="/listings/new" element={<CreateListingPage />} />
           </Routes>
         </Router>
       </AuthProvider>
