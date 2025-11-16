@@ -26,9 +26,10 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import BedIcon from '@mui/icons-material/Bed';
 import BathtubIcon from '@mui/icons-material/Bathtub';
 import { useAuth } from '../hooks/useAuth';
-import { getAllListings, deleteListing } from '../services/listingsService';
+import { getAllListings, deleteListing, publishListing, unpublishListing } from '../services/listingsService';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import StarRating from '../components/common/StarRating';
+import PublishListingDialog from '../components/listing/PublishListingDialog';
 
 const HostedListingsPage = () => {
   const navigate = useNavigate();
@@ -42,6 +43,11 @@ const HostedListingsPage = () => {
     severity: 'success',
   });
   const [deleteDialog, setDeleteDialog] = useState({
+    open: false,
+    listingId: null,
+    listingTitle: '',
+  });
+  const [publishDialog, setPublishDialog] = useState({
     open: false,
     listingId: null,
     listingTitle: '',
@@ -117,6 +123,66 @@ const HostedListingsPage = () => {
 
   const handleDeleteCancel = () => {
     setDeleteDialog({ open: false, listingId: null, listingTitle: '' });
+  };
+
+  // Handle publish listing
+  const handlePublishClick = (listingId, listingTitle) => {
+    setPublishDialog({
+      open: true,
+      listingId,
+      listingTitle,
+    });
+  };
+
+  const handlePublishConfirm = async (availability) => {
+    const { listingId } = publishDialog;
+
+    try {
+      await publishListing(listingId, availability);
+
+      // Refresh listings to show updated published status
+      await fetchListings();
+
+      setSnackbar({
+        open: true,
+        message: 'Listing published successfully',
+        severity: 'success',
+      });
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: error.message || 'Failed to publish listing',
+        severity: 'error',
+      });
+    } finally {
+      setPublishDialog({ open: false, listingId: null, listingTitle: '' });
+    }
+  };
+
+  const handlePublishCancel = () => {
+    setPublishDialog({ open: false, listingId: null, listingTitle: '' });
+  };
+
+  // Handle unpublish listing
+  const handleUnpublish = async (listingId) => {
+    try {
+      await unpublishListing(listingId);
+
+      // Refresh listings to show updated published status
+      await fetchListings();
+
+      setSnackbar({
+        open: true,
+        message: 'Listing unpublished successfully',
+        severity: 'success',
+      });
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: error.message || 'Failed to unpublish listing',
+        severity: 'error',
+      });
+    }
   };
 
   const handleCloseSnackbar = () => {
@@ -201,12 +267,28 @@ const HostedListingsPage = () => {
                         {listing.title}
                       </Typography>
 
-                      {/* Property Type */}
-                      <Chip
-                        label={propertyType}
-                        size="small"
-                        sx={{ mb: 1 }}
-                      />
+                      {/* Property Type and Published Status */}
+                      <Box sx={{ display: 'flex', gap: 1, mb: 1, flexWrap: 'wrap' }}>
+                        <Chip
+                          label={propertyType}
+                          size="small"
+                        />
+                        {listing.published && (
+                          <Chip
+                            label="Published"
+                            size="small"
+                            color="success"
+                          />
+                        )}
+                        {!listing.published && (
+                          <Chip
+                            label="Unpublished"
+                            size="small"
+                            color="default"
+                            variant="outlined"
+                          />
+                        )}
+                      </Box>
 
                       {/* Beds and Bathrooms */}
                       <Box sx={{ display: 'flex', gap: 2, mb: 1 }}>
@@ -245,22 +327,47 @@ const HostedListingsPage = () => {
                     </CardContent>
 
                     {/* Action Buttons */}
-                    <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
-                      <Button
-                        size="small"
-                        startIcon={<EditIcon />}
-                        onClick={() => navigate(`/listings/edit/${listing.id}`)}
-                        aria-label={`Edit ${listing.title}`}
-                      >
-                        Edit
-                      </Button>
-                      <IconButton
-                        color="error"
-                        onClick={() => handleDeleteClick(listing.id, listing.title)}
-                        aria-label={`Delete ${listing.title}`}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
+                    <CardActions sx={{ flexDirection: 'column', gap: 1, px: 2, pb: 2 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                        <Button
+                          size="small"
+                          startIcon={<EditIcon />}
+                          onClick={() => navigate(`/listings/edit/${listing.id}`)}
+                          aria-label={`Edit ${listing.title}`}
+                        >
+                          Edit
+                        </Button>
+                        <IconButton
+                          color="error"
+                          onClick={() => handleDeleteClick(listing.id, listing.title)}
+                          aria-label={`Delete ${listing.title}`}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Box>
+                      {listing.published ? (
+                        <Button
+                          fullWidth
+                          size="small"
+                          variant="outlined"
+                          color="warning"
+                          onClick={() => handleUnpublish(listing.id)}
+                          aria-label={`Unpublish ${listing.title}`}
+                        >
+                          Unpublish
+                        </Button>
+                      ) : (
+                        <Button
+                          fullWidth
+                          size="small"
+                          variant="contained"
+                          color="success"
+                          onClick={() => handlePublishClick(listing.id, listing.title)}
+                          aria-label={`Publish ${listing.title}`}
+                        >
+                          Publish
+                        </Button>
+                      )}
                     </CardActions>
                   </Card>
                 </Grid>
@@ -292,6 +399,14 @@ const HostedListingsPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Publish Listing Dialog */}
+      <PublishListingDialog
+        open={publishDialog.open}
+        onClose={handlePublishCancel}
+        onPublish={handlePublishConfirm}
+        listingTitle={publishDialog.listingTitle}
+      />
 
       {/* Snackbar for messages */}
       <Snackbar
