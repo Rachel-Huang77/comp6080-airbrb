@@ -25,10 +25,10 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import BedIcon from '@mui/icons-material/Bed';
 import BathtubIcon from '@mui/icons-material/Bathtub';
-import StarIcon from '@mui/icons-material/Star';
 import { useAuth } from '../hooks/useAuth';
 import { getAllListings, deleteListing } from '../services/listingsService';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import StarRating from '../components/common/StarRating';
 
 const HostedListingsPage = () => {
   const navigate = useNavigate();
@@ -225,8 +225,8 @@ const HostedListingsPage = () => {
                       </Box>
 
                       {/* Rating and Reviews */}
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
-                        <StarIcon fontSize="small" sx={{ color: '#FFD700' }} />
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                        <StarRating rating={avgRating} size="small" />
                         <Typography variant="body2" fontWeight="bold">
                           {avgRating > 0 ? avgRating : 'No rating'}
                         </Typography>
