@@ -1,24 +1,30 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it } from "vitest";
 import App from "../App";
 
-describe("example test", () => {
-  it("should pass", () => {
+describe("AirBrB App Tests", () => {
+  it("should pass basic test", () => {
     expect(true).toBe(true);
   });
-});
 
-describe("app test", () => {
-  it("captures the button and clicks it", async () => {
+  it("renders the app header with AirBrB title", async () => {
     render(<App />);
-    const button = screen.getByText("count is 0");
-    expect(button).toBeInTheDocument();
-    await fireEvent.click(button);  // You will find await useful when you trigger events
-    expect(button).toHaveTextContent("count is 1");
+    await waitFor(() => {
+      expect(screen.getByText('AirBrB')).toBeInTheDocument();
+    });
   });
 
-  it("captures the logos and renders them", () => {
+  it("renders login and register buttons when not authenticated", async () => {
     render(<App />);
-    expect(screen.getByText('Vite + React')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByLabelText('Login')).toBeInTheDocument();
+      expect(screen.getByLabelText('Register')).toBeInTheDocument();
+    });
+  });
+
+  it("renders the landing page loading state", async () => {
+    render(<App />);
+    // App should render without crashing
+    expect(screen.getByText('AirBrB')).toBeInTheDocument();
   });
 });
