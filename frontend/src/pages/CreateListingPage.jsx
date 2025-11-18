@@ -182,6 +182,62 @@ const CreateListingPage = () => {
     }
   };
 
+  // Handle JSON file upload (Feature 2.6.3)
+  const handleJsonUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const jsonData = JSON.parse(event.target.result);
+
+          // Validate JSON structure
+          if (!jsonData.title || !jsonData.address || !jsonData.price) {
+            throw new Error('Invalid JSON: Missing required fields (title, address, price)');
+          }
+
+          // Populate form data
+          setFormData({
+            title: jsonData.title || '',
+            street: jsonData.address?.street || '',
+            city: jsonData.address?.city || '',
+            state: jsonData.address?.state || '',
+            postcode: jsonData.address?.postcode || '',
+            country: jsonData.address?.country || '',
+            price: jsonData.price || '',
+            thumbnail: jsonData.thumbnail || '',
+            youtubeUrl: '',
+            propertyType: jsonData.metadata?.propertyType || '',
+            bathrooms: jsonData.metadata?.bathrooms || '',
+          });
+
+          // Populate bedrooms
+          if (jsonData.metadata?.bedrooms && Array.isArray(jsonData.metadata.bedrooms)) {
+            setBedrooms(jsonData.metadata.bedrooms);
+          }
+
+          // Populate amenities
+          if (jsonData.metadata?.amenities && Array.isArray(jsonData.metadata.amenities)) {
+            setAmenities(jsonData.metadata.amenities);
+          }
+
+          setSnackbar({
+            open: true,
+            message: 'Listing data loaded from JSON successfully',
+            severity: 'success',
+          });
+        } catch (error) {
+          setSnackbar({
+            open: true,
+            message: `Failed to load JSON: ${error.message}`,
+            severity: 'error',
+          });
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
   // Validate form
   const validateForm = () => {
     const newErrors = {};
@@ -332,6 +388,26 @@ const CreateListingPage = () => {
           </Box>
 
           <form onSubmit={handleSubmit}>
+            {/* JSON File Upload (Feature 2.6.3) */}
+            <Box sx={{ mb: 3, p: 2, bgcolor: 'background.paper', borderRadius: 1, border: '1px dashed', borderColor: 'divider' }}>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Quick Start: Upload a JSON file to auto-fill the form
+              </Typography>
+              <Button
+                variant="outlined"
+                component="label"
+                size="small"
+              >
+                Upload JSON File
+                <input
+                  type="file"
+                  hidden
+                  accept=".json,application/json"
+                  onChange={handleJsonUpload}
+                />
+              </Button>
+            </Box>
+
             {/* Basic Information */}
             <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
               Basic Information

@@ -8,6 +8,7 @@ import ListAltIcon from '@mui/icons-material/ListAlt';
 import LogoutIcon from '@mui/icons-material/Logout';
 import LoginIcon from '@mui/icons-material/Login';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import NotificationPanel from './NotificationPanel';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -70,7 +71,7 @@ const Header = () => {
           </Typography>
 
           {isAuthenticated ? (
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
               <Button
                 color="inherit"
                 startIcon={<HomeIcon />}
@@ -87,6 +88,7 @@ const Header = () => {
               >
                 My Listings
               </Button>
+              <NotificationPanel />
               <Button
                 color="inherit"
                 startIcon={<LogoutIcon />}

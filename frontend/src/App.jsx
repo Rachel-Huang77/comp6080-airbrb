@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { AuthProvider } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 import Header from './components/layout/Header';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
@@ -28,19 +29,21 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <AuthProvider>
-        <Router>
-          <Header />
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/my-listings" element={<HostedListingsPage />} />
-            <Route path="/listings/new" element={<CreateListingPage />} />
-            <Route path="/listings/edit/:id" element={<EditListingPage />} />
-            <Route path="/listings/:id/bookings" element={<BookingManagementPage />} />
-            <Route path="/listings/:id" element={<ListingDetailPage />} />
-          </Routes>
-        </Router>
+        <NotificationProvider>
+          <Router>
+            <Header />
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/my-listings" element={<HostedListingsPage />} />
+              <Route path="/listings/new" element={<CreateListingPage />} />
+              <Route path="/listings/edit/:id" element={<EditListingPage />} />
+              <Route path="/listings/:id/bookings" element={<BookingManagementPage />} />
+              <Route path="/listings/:id" element={<ListingDetailPage />} />
+            </Routes>
+          </Router>
+        </NotificationProvider>
       </AuthProvider>
     </ThemeProvider>
   );

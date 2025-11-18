@@ -28,9 +28,11 @@ import BathtubIcon from '@mui/icons-material/Bathtub';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import { useAuth } from '../hooks/useAuth';
 import { getAllListings, deleteListing, publishListing, unpublishListing } from '../services/listingsService';
+import { getAllBookings } from '../services/bookingsService';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import StarRating from '../components/common/StarRating';
 import PublishListingDialog from '../components/listing/PublishListingDialog';
+import ProfitGraph from '../components/common/ProfitGraph';
 
 // Check if a URL is a YouTube embed URL
 const isYouTubeUrl = (url) => {
@@ -42,6 +44,7 @@ const HostedListingsPage = () => {
   const { userEmail } = useAuth();
 
   const [listings, setListings] = useState([]);
+  const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -67,14 +70,24 @@ const HostedListingsPage = () => {
   const fetchListings = async () => {
     setLoading(true);
     try {
-      const allListings = await getAllListings();
+      const [allListings, allBookings] = await Promise.all([
+        getAllListings(),
+        getAllBookings(),
+      ]);
 
       // Filter to only show listings owned by current user
       const myListings = allListings.filter(
         (listing) => listing.owner === userEmail
       );
 
+      // Filter bookings for user's listings
+      const myListingIds = myListings.map((l) => l.id);
+      const myBookings = allBookings.filter((booking) =>
+        myListingIds.includes(booking.listingId)
+      );
+
       setListings(myListings);
+      setBookings(myBookings);
     } catch (error) {
       setSnackbar({
         open: true,
@@ -216,6 +229,9 @@ const HostedListingsPage = () => {
             Create New Listing
           </Button>
         </Box>
+
+        {/* Profit Graph (Feature 2.6.2) */}
+        {listings.length > 0 && <ProfitGraph bookings={bookings} />}
 
         {/* Listings Grid */}
         {listings.length === 0 ? (
