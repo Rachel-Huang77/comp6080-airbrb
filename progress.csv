@@ -20,5 +20,6 @@ section,completed
 2.6.1,NO
 2.6.2,YES
 2.6.3,YES
+2.6.4,YES
 
 FE_DEPLOYED_URL=<YOUR_DEPLOYED_URL>
