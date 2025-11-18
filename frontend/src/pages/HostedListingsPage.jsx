@@ -25,6 +25,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import BedIcon from '@mui/icons-material/Bed';
 import BathtubIcon from '@mui/icons-material/Bathtub';
+import BookmarkIcon from '@mui/icons-material/Bookmark';
 import { useAuth } from '../hooks/useAuth';
 import { getAllListings, deleteListing, publishListing, unpublishListing } from '../services/listingsService';
 import LoadingSpinner from '../components/common/LoadingSpinner';
@@ -365,6 +366,16 @@ const HostedListingsPage = () => {
                           <DeleteIcon />
                         </IconButton>
                       </Box>
+                      <Button
+                        fullWidth
+                        size="small"
+                        variant="outlined"
+                        startIcon={<BookmarkIcon />}
+                        onClick={() => navigate(`/listings/${listing.id}/bookings`)}
+                        aria-label={`Manage bookings for ${listing.title}`}
+                      >
+                        Manage Bookings
+                      </Button>
                       {listing.published ? (
                         <Button
                           fullWidth
