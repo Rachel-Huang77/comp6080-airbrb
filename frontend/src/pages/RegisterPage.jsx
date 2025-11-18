@@ -11,12 +11,10 @@ import {
   Alert,
   Link,
 } from '@mui/material';
-import { useAuth } from '../hooks/useAuth';
 import { register as registerApi } from '../services/authService';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   const [formData, setFormData] = useState({
     email: '',
@@ -122,26 +120,23 @@ const RegisterPage = () => {
     setLoading(true);
 
     try {
-      const data = await registerApi(
+      await registerApi(
         formData.email,
         formData.password,
         formData.name
       );
 
-      // Store token and email using AuthContext
-      login(data.token, formData.email);
-
       // Show success message
       setSnackbar({
         open: true,
-        message: 'Registration successful! Redirecting...',
+        message: 'Registration successful! Redirecting to login...',
         severity: 'success',
       });
 
-      // Redirect to home page after a short delay
+      // Redirect to login page after a short delay
       setTimeout(() => {
-        navigate('/');
-      }, 1000);
+        navigate('/login');
+      }, 1500);
     } catch (error) {
       setSnackbar({
         open: true,

@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import { getAllBookings } from '../services/bookingsService';
 import { getAllListings } from '../services/listingsService';
 
@@ -11,7 +11,7 @@ export const NotificationContext = createContext();
  */
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
-  const [lastCheckedBookings, setLastCheckedBookings] = useState(new Map());
+  const lastCheckedBookingsRef = useRef(new Map());
   const [userEmail, setUserEmail] = useState(null);
   const [userListingIds, setUserListingIds] = useState([]);
 
@@ -48,7 +48,7 @@ export const NotificationProvider = ({ children }) => {
       bookings.forEach((booking) => {
         const isMyListing = userListingIds.includes(booking.listingId);
         const isMyBooking = booking.owner === userEmail;
-        const lastStatus = lastCheckedBookings.get(booking.id);
+        const lastStatus = lastCheckedBookingsRef.current.get(booking.id);
 
         // Host notification: New booking request
         if (isMyListing && booking.status === 'pending' && !lastStatus) {
@@ -90,12 +90,12 @@ export const NotificationProvider = ({ children }) => {
         }
       });
 
-      // Update last checked bookings
+      // Update last checked bookings using ref (no re-render)
       const newLastChecked = new Map();
       bookings.forEach((booking) => {
         newLastChecked.set(booking.id, booking.status);
       });
-      setLastCheckedBookings(newLastChecked);
+      lastCheckedBookingsRef.current = newLastChecked;
 
       // Add new notifications
       if (newNotifications.length > 0) {
@@ -104,7 +104,7 @@ export const NotificationProvider = ({ children }) => {
     } catch (error) {
       console.error('Failed to check for notifications:', error);
     }
-  }, [userEmail, userListingIds, lastCheckedBookings]);
+  }, [userEmail, userListingIds]);
 
   // Set up polling (every 30 seconds)
   useEffect(() => {
