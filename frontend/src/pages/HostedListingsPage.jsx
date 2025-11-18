@@ -31,6 +31,11 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import StarRating from '../components/common/StarRating';
 import PublishListingDialog from '../components/listing/PublishListingDialog';
 
+// Check if a URL is a YouTube embed URL
+const isYouTubeUrl = (url) => {
+  return url && url.includes('youtube.com/embed/');
+};
+
 const HostedListingsPage = () => {
   const navigate = useNavigate();
   const { userEmail } = useAuth();
@@ -253,13 +258,28 @@ const HostedListingsPage = () => {
                     }}
                   >
                     {/* Thumbnail */}
-                    <CardMedia
-                      component="img"
-                      height="200"
-                      image={listing.thumbnail || '/placeholder-image.jpg'}
-                      alt={listing.title}
-                      sx={{ objectFit: 'cover' }}
-                    />
+                    {isYouTubeUrl(listing.thumbnail) ? (
+                      <Box sx={{ position: 'relative', height: 200, backgroundColor: '#000' }}>
+                        <iframe
+                          width="100%"
+                          height="200"
+                          src={listing.thumbnail}
+                          title={listing.title}
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          style={{ display: 'block' }}
+                        />
+                      </Box>
+                    ) : (
+                      <CardMedia
+                        component="img"
+                        height="200"
+                        image={listing.thumbnail || '/placeholder-image.jpg'}
+                        alt={listing.title}
+                        sx={{ objectFit: 'cover' }}
+                      />
+                    )}
 
                     <CardContent sx={{ flexGrow: 1 }}>
                       {/* Title */}

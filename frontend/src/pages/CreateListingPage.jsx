@@ -59,6 +59,26 @@ const COMMON_AMENITIES = [
   'Pet Friendly',
 ];
 
+// Helper function to extract YouTube video ID and convert to embed URL
+const getYouTubeEmbedUrl = (url) => {
+  if (!url) return null;
+
+  // Match various YouTube URL formats
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+
+  if (match && match[2].length === 11) {
+    return `https://www.youtube.com/embed/${match[2]}`;
+  }
+
+  // If it's already an embed URL, return as is
+  if (url.includes('youtube.com/embed/')) {
+    return url;
+  }
+
+  return null;
+};
+
 const CreateListingPage = () => {
   const navigate = useNavigate();
 
@@ -71,6 +91,7 @@ const CreateListingPage = () => {
     country: '',
     price: '',
     thumbnail: '',
+    youtubeUrl: '',
     propertyType: '',
     bathrooms: '',
   });
@@ -232,6 +253,15 @@ const CreateListingPage = () => {
     setLoading(true);
 
     try {
+      // Determine thumbnail: YouTube URL takes priority over image
+      let thumbnailValue = formData.thumbnail || '/placeholder-image.jpg';
+      if (formData.youtubeUrl.trim()) {
+        const embedUrl = getYouTubeEmbedUrl(formData.youtubeUrl.trim());
+        if (embedUrl) {
+          thumbnailValue = embedUrl;
+        }
+      }
+
       // Prepare listing data
       const listingData = {
         title: formData.title.trim(),
@@ -243,7 +273,7 @@ const CreateListingPage = () => {
           country: formData.country.trim(),
         },
         price: Number(formData.price),
-        thumbnail: formData.thumbnail || '/placeholder-image.jpg',
+        thumbnail: thumbnailValue,
         metadata: {
           propertyType: formData.propertyType,
           bathrooms: Number(formData.bathrooms),
@@ -554,9 +584,13 @@ const CreateListingPage = () => {
 
             {/* Thumbnail */}
             <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
-              Thumbnail Image
+              Thumbnail
             </Typography>
             <Divider sx={{ mb: 2 }} />
+
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Choose either an image upload or a YouTube video URL (YouTube URL takes priority)
+            </Typography>
 
             <Button
               variant="outlined"
@@ -564,7 +598,7 @@ const CreateListingPage = () => {
               fullWidth
               sx={{ mb: 2 }}
             >
-              Upload Thumbnail (Max 5MB)
+              Upload Thumbnail Image (Max 5MB)
               <input
                 type="file"
                 hidden
@@ -573,8 +607,45 @@ const CreateListingPage = () => {
               />
             </Button>
 
-            {formData.thumbnail && (
+            <Typography variant="body2" sx={{ mb: 1, textAlign: 'center' }}>
+              OR
+            </Typography>
+
+            <TextField
+              fullWidth
+              label="YouTube Video URL"
+              name="youtubeUrl"
+              value={formData.youtubeUrl}
+              onChange={handleChange}
+              placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
+              helperText="Paste a YouTube video URL to use as listing thumbnail"
+              margin="normal"
+            />
+
+            {/* Preview */}
+            {formData.youtubeUrl && getYouTubeEmbedUrl(formData.youtubeUrl) && (
               <Box sx={{ mt: 2, textAlign: 'center' }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  YouTube Video Preview:
+                </Typography>
+                <iframe
+                  width="100%"
+                  height="300"
+                  src={getYouTubeEmbedUrl(formData.youtubeUrl)}
+                  title="YouTube video preview"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  style={{ borderRadius: '8px' }}
+                />
+              </Box>
+            )}
+
+            {!formData.youtubeUrl && formData.thumbnail && (
+              <Box sx={{ mt: 2, textAlign: 'center' }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  Image Preview:
+                </Typography>
                 <img
                   src={formData.thumbnail}
                   alt="Thumbnail preview"

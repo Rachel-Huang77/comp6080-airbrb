@@ -31,6 +31,13 @@ import { createBooking, getAllBookings } from '../services/bookingsService';
 import { useAuth } from '../hooks/useAuth';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import StarRating from '../components/common/StarRating';
+import RatingBreakdown from '../components/common/RatingBreakdown';
+import ReviewsByRating from '../components/common/ReviewsByRating';
+
+// Check if a URL is a YouTube embed URL
+const isYouTubeUrl = (url) => {
+  return url && url.includes('youtube.com/embed/');
+};
 
 const ListingDetailPage = () => {
   const { id } = useParams();
@@ -56,6 +63,12 @@ const ListingDetailPage = () => {
   // Selected image for modal view
   const [selectedImage, setSelectedImage] = useState(null);
   const [imageDialog, setImageDialog] = useState(false);
+
+  // Reviews by rating dialog state
+  const [reviewsDialog, setReviewsDialog] = useState({
+    open: false,
+    rating: 0,
+  });
 
   // Fetch listing data on mount
   useEffect(() => {
@@ -184,6 +197,14 @@ const ListingDetailPage = () => {
     setImageDialog(true);
   };
 
+  // Handle star rating click
+  const handleStarClick = (rating) => {
+    setReviewsDialog({
+      open: true,
+      rating,
+    });
+  };
+
   // Format address as string
   const formatAddress = (address) => {
     if (!address) return 'Address not available';
@@ -267,7 +288,7 @@ const ListingDetailPage = () => {
             {/* Image Gallery */}
             <Paper elevation={2} sx={{ p: 2, mb: 3 }}>
               <Typography variant="h6" gutterBottom>
-                Property Photos
+                Property Photos & Videos
               </Typography>
               <ImageList cols={2} gap={8} sx={{ maxHeight: 500 }}>
                 {allImages.map((image, index) => (
@@ -276,12 +297,27 @@ const ListingDetailPage = () => {
                     sx={{ cursor: 'pointer' }}
                     onClick={() => handleImageClick(image)}
                   >
-                    <img
-                      src={image}
-                      alt={`Property ${index + 1}`}
-                      loading="lazy"
-                      style={{ height: '200px', objectFit: 'cover' }}
-                    />
+                    {isYouTubeUrl(image) ? (
+                      <Box sx={{ position: 'relative', height: 200, backgroundColor: '#000' }}>
+                        <iframe
+                          width="100%"
+                          height="200"
+                          src={image}
+                          title={`Property video ${index + 1}`}
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          style={{ display: 'block' }}
+                        />
+                      </Box>
+                    ) : (
+                      <img
+                        src={image}
+                        alt={`Property ${index + 1}`}
+                        loading="lazy"
+                        style={{ height: '200px', objectFit: 'cover' }}
+                      />
+                    )}
                   </ImageListItem>
                 ))}
               </ImageList>
@@ -339,12 +375,25 @@ const ListingDetailPage = () => {
               </Paper>
             )}
 
-            {/* Reviews */}
+            {/* Reviews and Rating Breakdown */}
             <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" gutterBottom>
-                Reviews
+                Reviews & Ratings
               </Typography>
-              <Divider sx={{ mb: 2 }} />
+              <Divider sx={{ mb: 3 }} />
+
+              {/* Rating Breakdown Component (Feature 2.4.4) */}
+              <RatingBreakdown
+                reviews={listing.reviews || []}
+                onStarClick={handleStarClick}
+              />
+
+              <Divider sx={{ my: 3 }} />
+
+              {/* All Reviews List */}
+              <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ mt: 3 }}>
+                All Reviews
+              </Typography>
               {listing.reviews && listing.reviews.length > 0 ? (
                 <List>
                   {listing.reviews.map((review, index) => (
@@ -518,7 +567,7 @@ const ListingDetailPage = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Image View Dialog */}
+      {/* Image/Video View Dialog */}
       <Dialog
         open={imageDialog}
         onClose={() => setImageDialog(false)}
@@ -526,16 +575,43 @@ const ListingDetailPage = () => {
         fullWidth
       >
         <DialogContent>
-          <img
-            src={selectedImage}
-            alt="Property"
-            style={{ width: '100%', height: 'auto' }}
-          />
+          {isYouTubeUrl(selectedImage) ? (
+            <Box sx={{ position: 'relative', width: '100%', paddingTop: '56.25%', backgroundColor: '#000' }}>
+              <iframe
+                src={selectedImage}
+                title="Property video"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                }}
+              />
+            </Box>
+          ) : (
+            <img
+              src={selectedImage}
+              alt="Property"
+              style={{ width: '100%', height: 'auto' }}
+            />
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setImageDialog(false)}>Close</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Reviews by Rating Dialog (Feature 2.4.4) */}
+      <ReviewsByRating
+        open={reviewsDialog.open}
+        onClose={() => setReviewsDialog({ open: false, rating: 0 })}
+        rating={reviewsDialog.rating}
+        reviews={listing?.reviews || []}
+      />
 
       {/* Snackbar for messages */}
       <Snackbar
