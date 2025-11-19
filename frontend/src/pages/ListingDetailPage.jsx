@@ -33,6 +33,7 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import StarRating from '../components/common/StarRating';
 import RatingBreakdown from '../components/common/RatingBreakdown';
 import ReviewsByRating from '../components/common/ReviewsByRating';
+import { calculateTotalBeds, getBathrooms, getPropertyType } from '../utils/listingUtils';
 
 // Check if a URL is a YouTube embed URL
 const isYouTubeUrl = (url) => {
@@ -248,6 +249,12 @@ const ListingDetailPage = () => {
   const metadata = listing.metadata || {};
   const allImages = [listing.thumbnail, ...(metadata.images || [])].filter(Boolean);
 
+  // Calculate property details using utility functions
+  const totalBeds = calculateTotalBeds(listing);
+  const numBedrooms = metadata.bedrooms?.length || 0;
+  const numBathrooms = getBathrooms(listing);
+  const propertyType = getPropertyType(listing);
+
   return (
     <>
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -333,27 +340,27 @@ const ListingDetailPage = () => {
               <Grid container spacing={2}>
                 <Grid item xs={6} sm={3}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Chip label={metadata.propertyType || 'Property'} />
+                    <Chip label={propertyType} />
                   </Box>
                 </Grid>
                 <Grid item xs={6} sm={3}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <BedIcon color="action" />
                     <Typography>
-                      {metadata.beds || 0} {metadata.beds === 1 ? 'bed' : 'beds'}
+                      {totalBeds} {totalBeds === 1 ? 'bed' : 'beds'}
                     </Typography>
                   </Box>
                 </Grid>
                 <Grid item xs={6} sm={3}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography>{metadata.bedrooms?.length || 0} bedrooms</Typography>
+                    <Typography>{numBedrooms} {numBedrooms === 1 ? 'bedroom' : 'bedrooms'}</Typography>
                   </Box>
                 </Grid>
                 <Grid item xs={6} sm={3}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <BathtubIcon color="action" />
                     <Typography>
-                      {metadata.bathrooms || 0} {metadata.bathrooms === 1 ? 'bath' : 'baths'}
+                      {numBathrooms} {numBathrooms === 1 ? 'bath' : 'baths'}
                     </Typography>
                   </Box>
                 </Grid>
