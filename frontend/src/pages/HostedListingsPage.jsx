@@ -27,7 +27,7 @@ import BedIcon from '@mui/icons-material/Bed';
 import BathtubIcon from '@mui/icons-material/Bathtub';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import { useAuth } from '../hooks/useAuth';
-import { getAllListings, deleteListing, publishListing, unpublishListing } from '../services/listingsService';
+import { getAllListings, getListingById, deleteListing, publishListing, unpublishListing } from '../services/listingsService';
 import { getAllBookings } from '../services/bookingsService';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import StarRating from '../components/common/StarRating';
@@ -78,9 +78,16 @@ const HostedListingsPage = () => {
       ]);
 
       // Filter to only show listings owned by current user
-      const myListings = allListings.filter(
+      const myBasicListings = allListings.filter(
         (listing) => listing.owner === userEmail
       );
+
+      // Fetch detailed data for each listing (including metadata and published status)
+      // GET /listings only returns basic info, but GET /listings/:id returns full data
+      const detailedListingsPromises = myBasicListings.map((listing) =>
+        getListingById(listing.id)
+      );
+      const myListings = await Promise.all(detailedListingsPromises);
 
       // Filter bookings for user's listings
       const myListingIds = myListings.map((l) => l.id);
