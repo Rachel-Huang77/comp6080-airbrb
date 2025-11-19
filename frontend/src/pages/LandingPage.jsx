@@ -26,6 +26,7 @@ import BathtubIcon from '@mui/icons-material/Bathtub';
 import { getAllListings } from '../services/listingsService';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import StarRating from '../components/common/StarRating';
+import { calculateTotalBeds, getBathrooms, getPropertyType } from '../utils/listingUtils';
 
 // Check if a URL is a YouTube embed URL
 const isYouTubeUrl = (url) => {
@@ -352,10 +353,9 @@ const LandingPage = () => {
           {filteredListings.map((listing) => {
             const avgRating = calculateAverageRating(listing.reviews);
             const numReviews = listing.reviews ? listing.reviews.length : 0;
-            const metadata = listing.metadata || {};
-            const propertyType = metadata.propertyType || 'Property';
-            const numBeds = metadata.beds || 0;
-            const numBathrooms = metadata.bathrooms || 0;
+            const propertyType = getPropertyType(listing);
+            const numBeds = calculateTotalBeds(listing);
+            const numBathrooms = getBathrooms(listing);
 
             return (
               <Grid item xs={12} sm={6} md={4} key={listing.id}>
