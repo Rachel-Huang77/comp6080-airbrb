@@ -23,7 +23,7 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import BedIcon from '@mui/icons-material/Bed';
 import BathtubIcon from '@mui/icons-material/Bathtub';
-import { getAllListings } from '../services/listingsService';
+import { getAllListings, getListingById } from '../services/listingsService';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import StarRating from '../components/common/StarRating';
 import { calculateTotalBeds, getBathrooms, getPropertyType } from '../utils/listingUtils';
@@ -59,10 +59,17 @@ const LandingPage = () => {
   const fetchListings = async () => {
     setLoading(true);
     try {
-      const listings = await getAllListings();
+      const basicListings = await getAllListings();
+
+      // Fetch detailed data for each listing (including metadata and published status)
+      // GET /listings only returns basic info, but GET /listings/:id returns full data
+      const detailedListingsPromises = basicListings.map((listing) =>
+        getListingById(listing.id)
+      );
+      const detailedListings = await Promise.all(detailedListingsPromises);
 
       // Filter to only published listings
-      const publishedListings = listings.filter((listing) => listing.published);
+      const publishedListings = detailedListings.filter((listing) => listing.published);
 
       setAllListings(publishedListings);
       setFilteredListings(publishedListings);
