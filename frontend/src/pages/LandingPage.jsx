@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Container,
   Typography,
@@ -34,6 +34,7 @@ const isYouTubeUrl = (url) => {
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [allListings, setAllListings] = useState([]);
   const [filteredListings, setFilteredListings] = useState([]);
@@ -49,10 +50,10 @@ const LandingPage = () => {
   const [maxPrice, setMaxPrice] = useState('');
   const [sortRating, setSortRating] = useState('none'); // 'none', 'high-low', 'low-high'
 
-  // Fetch all listings on mount
+  // Fetch all listings on mount and when navigation occurs
   useEffect(() => {
     fetchListings();
-  }, []);
+  }, [location.key]); // Re-fetch when returning to this page
 
   const fetchListings = async () => {
     setLoading(true);

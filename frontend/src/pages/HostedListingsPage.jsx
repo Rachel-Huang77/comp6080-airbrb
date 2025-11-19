@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Container,
   Typography,
@@ -41,6 +41,7 @@ const isYouTubeUrl = (url) => {
 
 const HostedListingsPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { userEmail } = useAuth();
 
   const [listings, setListings] = useState([]);
@@ -62,10 +63,10 @@ const HostedListingsPage = () => {
     listingTitle: '',
   });
 
-  // Fetch all listings on mount
+  // Fetch all listings on mount and when returning to this page
   useEffect(() => {
     fetchListings();
-  }, []);
+  }, [location.key]); // Re-fetch when navigation occurs
 
   const fetchListings = async () => {
     setLoading(true);
