@@ -84,10 +84,14 @@ const HostedListingsPage = () => {
 
       // Fetch detailed data for each listing (including metadata and published status)
       // GET /listings only returns basic info, but GET /listings/:id returns full data
-      // Important: GET /listings/:id doesn't return the id field, so we preserve it
+      // Important: GET /listings/:id doesn't return the id and owner fields, so we preserve them
       const detailedListingsPromises = myBasicListings.map(async (listing) => {
         const detailedListing = await getListingById(listing.id);
-        return { ...detailedListing, id: listing.id }; // Preserve the id field
+        return {
+          ...detailedListing,
+          id: listing.id,           // Preserve the id field
+          owner: listing.owner      // Preserve the owner field
+        };
       });
       const myListings = await Promise.all(detailedListingsPromises);
 
