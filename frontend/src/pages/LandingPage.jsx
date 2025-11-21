@@ -67,9 +67,11 @@ const LandingPage = () => {
 
       // Fetch detailed data for each listing (including metadata and published status)
       // GET /listings only returns basic info, but GET /listings/:id returns full data
-      const detailedListingsPromises = basicListings.map((listing) =>
-        getListingById(listing.id)
-      );
+      // Important: GET /listings/:id doesn't return the id field, so we preserve it
+      const detailedListingsPromises = basicListings.map(async (listing) => {
+        const detailedListing = await getListingById(listing.id);
+        return { ...detailedListing, id: listing.id }; // Preserve the id field
+      });
       const detailedListings = await Promise.all(detailedListingsPromises);
 
       // Filter to only published listings
