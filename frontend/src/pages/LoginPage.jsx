@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Container,
   Box,
@@ -16,6 +16,7 @@ import { login as loginApi } from '../services/authService';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -96,9 +97,10 @@ const LoginPage = () => {
         severity: 'success',
       });
 
-      // Redirect to home page after a short delay
+      // Redirect to the page user came from, or home page if no redirect specified
       setTimeout(() => {
-        navigate('/');
+        const from = location.state?.from || '/';
+        navigate(from);
       }, 500);
     } catch (error) {
       setSnackbar({

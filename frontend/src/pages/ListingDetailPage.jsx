@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   Container,
   Typography,
@@ -44,6 +44,7 @@ const isYouTubeUrl = (url) => {
 const ListingDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { isLoggedIn, userEmail } = useAuth();
 
   const [listing, setListing] = useState(null);
@@ -583,7 +584,7 @@ const ListingDetailPage = () => {
                   </Typography>
                   <Button
                     variant="contained"
-                    onClick={() => navigate('/login')}
+                    onClick={() => navigate('/login', { state: { from: location.pathname } })}
                     sx={{ mt: 2 }}
                   >
                     Log In

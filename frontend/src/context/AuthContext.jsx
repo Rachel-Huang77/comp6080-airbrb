@@ -35,11 +35,13 @@ export const AuthProvider = ({ children }) => {
   };
 
   const isAuthenticated = Boolean(token);
+  const isLoggedIn = Boolean(token); // Alias for better readability
 
   const value = {
     token,
     userEmail,
     isAuthenticated,
+    isLoggedIn, // Add isLoggedIn for consistency
     loading,
     login,
     logout,

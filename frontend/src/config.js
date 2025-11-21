@@ -18,7 +18,7 @@ export const API_ENDPOINTS = {
 
   // Bookings
   BOOKINGS: '/bookings',
-  BOOKING_NEW: '/bookings/new',
+  BOOKING_NEW: (listingId) => `/bookings/new/${listingId}`,
   BOOKING_DETAIL: (id) => `/bookings/${id}`,
   BOOKING_ACCEPT: (id) => `/bookings/accept/${id}`,
   BOOKING_DECLINE: (id) => `/bookings/decline/${id}`,

@@ -16,7 +16,8 @@ export const getAllBookings = async () => {
  * @returns {Promise<Object>} Created booking with bookingId
  */
 export const createBooking = async (bookingData) => {
-  const data = await post(API_ENDPOINTS.BOOKING_NEW, bookingData, true);
+  const { listingId, ...bookingPayload } = bookingData;
+  const data = await post(API_ENDPOINTS.BOOKING_NEW(listingId), bookingPayload, true);
   return data;
 };
 
