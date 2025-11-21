@@ -24,6 +24,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import BedIcon from '@mui/icons-material/Bed';
 import BathtubIcon from '@mui/icons-material/Bathtub';
 import { getAllListings, getListingById } from '../services/listingsService';
+import { getAllBookings } from '../services/bookingsService';
+import { useAuth } from '../hooks/useAuth';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import StarRating from '../components/common/StarRating';
 import { calculateTotalBeds, getBathrooms, getPropertyType } from '../utils/listingUtils';
@@ -36,10 +38,12 @@ const isYouTubeUrl = (url) => {
 const LandingPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isLoggedIn, userEmail } = useAuth();
 
   const [allListings, setAllListings] = useState([]);
   const [filteredListings, setFilteredListings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [userBookings, setUserBookings] = useState([]);
 
   // Search and filter states
   const [searchText, setSearchText] = useState('');
@@ -71,6 +75,20 @@ const LandingPage = () => {
       // Filter to only published listings
       const publishedListings = detailedListings.filter((listing) => listing.published);
 
+      // Fetch user bookings if logged in (for booking-based sorting)
+      if (isLoggedIn) {
+        try {
+          const bookings = await getAllBookings();
+          const myBookings = bookings.filter((booking) => booking.owner === userEmail);
+          setUserBookings(myBookings);
+        } catch (error) {
+          console.error('Failed to fetch bookings:', error);
+          setUserBookings([]);
+        }
+      } else {
+        setUserBookings([]);
+      }
+
       setAllListings(publishedListings);
       setFilteredListings(publishedListings);
     } catch (error) {
@@ -90,10 +108,28 @@ const LandingPage = () => {
   };
 
   // Sort listings based on bookings and alphabetical order
+  // Feature 2.3.1: Listings with user's accepted/pending bookings appear first
   const sortListingsByBookings = (listings) => {
-    // For now, just sort alphabetically by title
-    // TODO: Implement booking-based sorting when booking system is implemented
-    return [...listings].sort((a, b) => a.title.localeCompare(b.title));
+    return [...listings].sort((a, b) => {
+      // Check if user has accepted or pending bookings for each listing
+      const hasBookingA = userBookings.some(
+        (booking) =>
+          booking.listingId === a.id &&
+          (booking.status === 'accepted' || booking.status === 'pending')
+      );
+      const hasBookingB = userBookings.some(
+        (booking) =>
+          booking.listingId === b.id &&
+          (booking.status === 'accepted' || booking.status === 'pending')
+      );
+
+      // Listings with bookings come first
+      if (hasBookingA && !hasBookingB) return -1;
+      if (!hasBookingA && hasBookingB) return 1;
+
+      // If both have bookings or both don't, sort alphabetically
+      return a.title.localeCompare(b.title);
+    });
   };
 
   // Apply search and filters

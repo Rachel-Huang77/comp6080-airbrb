@@ -26,13 +26,14 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import BedIcon from '@mui/icons-material/Bed';
 import BathtubIcon from '@mui/icons-material/Bathtub';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import { getListingById } from '../services/listingsService';
+import { getListingById, leaveReview } from '../services/listingsService';
 import { createBooking, getAllBookings } from '../services/bookingsService';
 import { useAuth } from '../hooks/useAuth';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import StarRating from '../components/common/StarRating';
 import RatingBreakdown from '../components/common/RatingBreakdown';
 import ReviewsByRating from '../components/common/ReviewsByRating';
+import ReviewDialog from '../components/listing/ReviewDialog';
 import { calculateTotalBeds, getBathrooms, getPropertyType } from '../utils/listingUtils';
 
 // Check if a URL is a YouTube embed URL
@@ -69,6 +70,12 @@ const ListingDetailPage = () => {
   const [reviewsDialog, setReviewsDialog] = useState({
     open: false,
     rating: 0,
+  });
+
+  // Review dialog state (Feature 2.4.3)
+  const [reviewDialog, setReviewDialog] = useState({
+    open: false,
+    bookingId: null,
   });
 
   // Fetch listing data on mount
@@ -204,6 +211,32 @@ const ListingDetailPage = () => {
       open: true,
       rating,
     });
+  };
+
+  // Handle leave review button click (Feature 2.4.3)
+  const handleLeaveReviewClick = (bookingId) => {
+    setReviewDialog({
+      open: true,
+      bookingId,
+    });
+  };
+
+  // Handle submit review (Feature 2.4.3)
+  const handleSubmitReview = async (reviewData) => {
+    try {
+      await leaveReview(id, reviewDialog.bookingId, reviewData);
+
+      setSnackbar({
+        open: true,
+        message: 'Review submitted successfully!',
+        severity: 'success',
+      });
+
+      // Refresh listing data to show new review
+      await fetchListingData();
+    } catch (error) {
+      throw new Error(error.message || 'Failed to submit review');
+    }
   };
 
   // Format address as string
@@ -510,7 +543,14 @@ const ListingDetailPage = () => {
                       </Typography>
                       <List dense>
                         {myBookings.map((booking, index) => (
-                          <ListItem key={index}>
+                          <ListItem
+                            key={index}
+                            sx={{
+                              flexDirection: 'column',
+                              alignItems: 'flex-start',
+                              py: 1.5,
+                            }}
+                          >
                             <ListItemText
                               primary={`${booking.dateRange.start} to ${booking.dateRange.end}`}
                               secondary={
@@ -519,6 +559,17 @@ const ListingDetailPage = () => {
                                 </Box>
                               }
                             />
+                            {/* Feature 2.4.3: Leave Review button for accepted bookings */}
+                            {booking.status === 'accepted' && (
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                onClick={() => handleLeaveReviewClick(booking.id)}
+                                sx={{ mt: 1 }}
+                              >
+                                Leave Review
+                              </Button>
+                            )}
                           </ListItem>
                         ))}
                       </List>
@@ -618,6 +669,14 @@ const ListingDetailPage = () => {
         onClose={() => setReviewsDialog({ open: false, rating: 0 })}
         rating={reviewsDialog.rating}
         reviews={listing?.reviews || []}
+      />
+
+      {/* Review Dialog (Feature 2.4.3) */}
+      <ReviewDialog
+        open={reviewDialog.open}
+        onClose={() => setReviewDialog({ open: false, bookingId: null })}
+        onSubmit={handleSubmitReview}
+        listingTitle={listing?.title || ''}
       />
 
       {/* Snackbar for messages */}
